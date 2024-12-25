@@ -35,10 +35,17 @@ func main() {
 
 	client := api.NewClient(url, http.DefaultClient)
 
+	prompt := `generate a mermaid graph from this: 
+	The MCP Client will be a simple HTTP client run by the Host GenAI application.
+	The MCP Client will make HTTP requests to the MCP Server to get 
+	the list of tools and to make tool calls. 
+	The MCP Server will respond with the list of tools and the output of 
+	the tool calls.
+	`
 
 	// Prompt construction
 	messages := []api.Message{
-		{Role: "user", Content: "generate a hello world in golang"},
+		{Role: "user", Content: prompt},
 	}
 
 	req := &api.ChatRequest{
@@ -58,6 +65,7 @@ func main() {
 		answer += resp.Message.Content
 		fmt.Print(resp.Message.Content)
 		//fmt.Println(answer)
+		
 		return nil
 	})
 
