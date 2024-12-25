@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -27,73 +27,18 @@ func main() {
 
 	var toolsLLM string
 	if toolsLLM = os.Getenv("TOOLS_LLM"); toolsLLM == "" {
-		toolsLLM = "allenporter/xlam:1b"
-		//toolsLLM = "qwen2.5:1.5b"
+		//toolsLLM = "allenporter/xlam:1b"
+		toolsLLM = "qwen2.5:1.5b"
 	}
 
 	url, _ := url.Parse(ollamaRawUrl)
 
 	client := api.NewClient(url, http.DefaultClient)
 
-	// Define some tools
-	helloTool := map[string]any{
-		"type": "function",
-		"function": map[string]any{
-			"name":        "hello",
-			"description": "Say hello to a given person with his name",
-			"parameters": map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"name": map[string]any{
-						"type":        "string",
-						"description": "The name of the person",
-					},
-				},
-				"required": []string{"name"},
-			},
-		},
-	}
-
-	addNumbersTool := map[string]any{
-		"type": "function",
-		"function": map[string]any{
-			"name":        "add_numbers",
-			"description": "Add two numbers",
-			"parameters": map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"number1": map[string]any{
-						"type":        "number",
-						"description": "The first number",
-					},
-					"number2": map[string]any{
-						"type":        "number",
-						"description": "The second number",
-					},
-				},
-				"required": []string{"number1", "number2"},
-			},
-		},
-	}
-
-	tools := []any{helloTool, addNumbersTool}
-	// transform tools to json
-	//jsonTools, _ := json.MarshalIndent(tools, "", "  ")
-	jsonTools, _ := json.Marshal(tools)
-
-	//fmt.Println(string(jsonTools))
-	
-	var toolsList api.Tools
-	jsonErr := json.Unmarshal(jsonTools, &toolsList)
-	if jsonErr != nil {
-		log.Fatalln("😡", jsonErr)
-	}
 
 	// Prompt construction
 	messages := []api.Message{
-		{Role: "user", Content: "Say hello to Bob"},
-		{Role: "user", Content: "add 28 to 12"},
-		{Role: "user", Content: "Say hello to Sarah"},
+		{Role: "user", Content: "generate a hello world in golang"},
 	}
 
 	req := &api.ChatRequest{
@@ -103,18 +48,16 @@ func main() {
 			"temperature":   0.0,
 			"repeat_last_n": 2,
 		},
-		Tools:  toolsList,
-		Stream: &FALSE,
+		Stream: &TRUE,
 		//Format: json.RawMessage(`"json"`),
 	}
 
+	answer := ""
 	err := client.Chat(ctx, req, func(resp api.ChatResponse) error {
 		//fmt.Println("🖐️", resp.Message.ToolCalls)
-
-		for _, toolCall := range resp.Message.ToolCalls {
-			fmt.Println(toolCall.Function.Name, toolCall.Function.Arguments)
-		}
-
+		answer += resp.Message.Content
+		fmt.Print(resp.Message.Content)
+		//fmt.Println(answer)
 		return nil
 	})
 
