@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"time"
+
 	//"encoding/json"
 	"fmt"
 	"log"
@@ -35,12 +37,13 @@ func main() {
 
 	client := api.NewClient(url, http.DefaultClient)
 
-	prompt := `generate a mermaid graph from this: 
-	The MCP Client will be a simple HTTP client run by the Host GenAI application.
-	The MCP Client will make HTTP requests to the MCP Server to get 
+	prompt := `Generate a mermaid graph from this: 
+	- The MCP Client will be a simple HTTP client run by the Host GenAI application.
+	- The MCP Client will make HTTP requests to the MCP Server to get 
 	the list of tools and to make tool calls. 
-	The MCP Server will respond with the list of tools and the output of 
+	- The MCP Server will respond with the list of tools and the output of 
 	the tool calls.
+	Add clear explanation at the end with emoji.
 	`
 
 	// Prompt construction
@@ -49,7 +52,7 @@ func main() {
 	}
 
 	req := &api.ChatRequest{
-		Model: toolsLLM,
+		Model:    toolsLLM,
 		Messages: messages,
 		Options: map[string]interface{}{
 			"temperature":   0.0,
@@ -65,7 +68,7 @@ func main() {
 		answer += resp.Message.Content
 		fmt.Print(resp.Message.Content)
 		//fmt.Println(answer)
-		
+
 		return nil
 	})
 
@@ -73,7 +76,11 @@ func main() {
 		log.Fatalln("😡", err)
 	}
 
-	fmt.Println()
+	fmt.Println("***-----***")
 	fmt.Println("🚀", ollamaRawUrl, toolsLLM)
+
+	for {
+		time.Sleep(2 * time.Second)
+	}
 
 }
