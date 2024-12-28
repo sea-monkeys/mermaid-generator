@@ -1,0 +1,15 @@
+{
+	"name": "demo-ollama",
+	"dockerComposeFile": "./compose.yml",
+	"service": "run-tools-code",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	},
+	"updateContentCommand": "echo 'hello'",
+	"remoteUser": "bob"
+}
