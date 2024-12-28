@@ -77,10 +77,21 @@ func main() {
 	}
 
 	fmt.Println("***-----***")
-	fmt.Println("🚀", ollamaRawUrl, toolsLLM)
+	fmt.Println("🚀...", ollamaRawUrl, toolsLLM)
 
-	for {
-		time.Sleep(2 * time.Second)
-	}
+	// Create a channel for exit code
+	exitCode := make(chan int)
+
+	// Start the infinite loop in a goroutine
+	go func() {
+		for {
+			//fmt.Println("Working...")
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
+	// Wait for exit code at the end of main
+	code := <-exitCode
+	os.Exit(code)
 
 }
