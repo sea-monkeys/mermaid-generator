@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"time"
 
 	//"encoding/json"
 	"fmt"
@@ -27,32 +26,27 @@ func main() {
 		ollamaRawUrl = "http://localhost:11434"
 	}
 
-	var toolsLLM string
-	if toolsLLM = os.Getenv("TOOLS_LLM"); toolsLLM == "" {
-		//toolsLLM = "allenporter/xlam:1b"
-		toolsLLM = "qwen2.5:1.5b"
-	}
+	model := "qwen2.5-coder:1.5b"
 
 	url, _ := url.Parse(ollamaRawUrl)
 
+	fmt.Println("🤖", ollamaRawUrl, model)
+
 	client := api.NewClient(url, http.DefaultClient)
 
-	prompt := `Generate a mermaid graph from this: 
-	- The MCP Client will be a simple HTTP client run by the Host GenAI application.
-	- The MCP Client will make HTTP requests to the MCP Server to get 
-	the list of tools and to make tool calls. 
-	- The MCP Server will respond with the list of tools and the output of 
-	the tool calls.
-	Add clear explanation at the end with emoji.
-	`
+	// Load the content of the prompt.txt file
+	prompt, err := os.ReadFile("prompt.md")
+	if err != nil {
+		log.Fatalln("😡", err)
+	}
 
 	// Prompt construction
 	messages := []api.Message{
-		{Role: "user", Content: prompt},
+		{Role: "user", Content: string(prompt)},
 	}
 
 	req := &api.ChatRequest{
-		Model:    toolsLLM,
+		Model:    model,
 		Messages: messages,
 		Options: map[string]interface{}{
 			"temperature":   0.0,
@@ -63,12 +57,9 @@ func main() {
 	}
 
 	answer := ""
-	err := client.Chat(ctx, req, func(resp api.ChatResponse) error {
-		//fmt.Println("🖐️", resp.Message.ToolCalls)
+	err = client.Chat(ctx, req, func(resp api.ChatResponse) error {
 		answer += resp.Message.Content
 		fmt.Print(resp.Message.Content)
-		//fmt.Println(answer)
-
 		return nil
 	})
 
@@ -76,22 +67,11 @@ func main() {
 		log.Fatalln("😡", err)
 	}
 
-	fmt.Println("***-----***")
-	fmt.Println("🚀...", ollamaRawUrl, toolsLLM)
+	// generate a markdown file from the value of answer
+	err = os.WriteFile("report.md", []byte(answer), 0644)
+	if err != nil {
+		log.Fatalln("😡", err)
+	}
 
-	// Create a channel for exit code
-	exitCode := make(chan int)
-
-	// Start the infinite loop in a goroutine
-	go func() {
-		for {
-			//fmt.Println("Working...")
-			time.Sleep(1 * time.Second)
-		}
-	}()
-
-	// Wait for exit code at the end of main
-	code := <-exitCode
-	os.Exit(code)
-
+	//for {}
 }

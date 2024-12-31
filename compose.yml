@@ -7,54 +7,29 @@ services:
     ports:
       - 11434:11434
 
-  download-tools-llm-2:
-    image: curlimages/curl:8.6.0
-    entrypoint: ["curl", "ollama-service:11434/api/pull", "-d", "{\"name\": \"qwen2.5:1.5b\"}"]
-    depends_on:
-      ollama-service:
-        condition: service_started
-
-  download-tools-llm-3:
+  download-tools-llm:
     image: curlimages/curl:8.6.0
     entrypoint: ["curl", "ollama-service:11434/api/pull", "-d", "{\"name\": \"qwen2.5-coder:1.5b\"}"]
     depends_on:
       ollama-service:
         condition: service_started
 
-
   run-tools-code:
     build: .
-    #image: golang:1.23.4-alpine
-    #command: sleep infinity
-    #entrypoint:
-    command: go run main.go
-    #  - /bin/sh
-    #  - -c
-    #  - cd /app && go mod tidy && go run main.go
+    command: go run main.go; sleep infinity
     environment:
       - OLLAMA_HOST=http://ollama-service:11434
-      #- TOOLS_LLM=allenporter/xlam:1b
-      - TOOLS_LLM=qwen2.5-coder:1.5b
     volumes:
       - ./:/app
     depends_on:
-      download-tools-llm-3:
+      download-tools-llm:
         condition: service_completed_successfully
-      download-tools-llm-2:
-        condition: service_completed_successfully
+
     develop:
       watch:
-        #- action: sync+restart
-        #  path: ./
-        #  target: /app 
         - action: rebuild
           path: ./main.go
           target: /app
-
-
-  #ubuntu:
-  #  image: ubuntu:22.04
-  #  tty: true
-  #  command: tail -f /dev/null
-  #  volumes:
-  #    - ./:/app    
+        - action: rebuild
+          path: ./prompt.txt
+          target: /app 
