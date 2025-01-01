@@ -27,6 +27,7 @@ func main() {
 	}
 
 	model := "qwen2.5-coder:1.5b"
+	systemInstructions := "You are a useful AI agent, expert with mermaid diagrams and source code generation."
 
 	url, _ := url.Parse(ollamaRawUrl)
 
@@ -42,6 +43,7 @@ func main() {
 
 	// Prompt construction
 	messages := []api.Message{
+		{Role: "system", Content: systemInstructions},
 		{Role: "user", Content: string(prompt)},
 	}
 
